@@ -21,7 +21,7 @@ Some parts were inspired by QGIS plugin FreeHandEditting
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtCore import Qt
 from qgis import core, gui
-from qgis.core import QGis, QgsGeometry
+from qgis.core import QGis, QgsGeometry, QgsFeatureRequest
 import math, json
 
 class AcquisitionFree(gui.QgsMapTool):
@@ -340,6 +340,7 @@ class AcquisitionFree(gui.QgsMapTool):
             return
         if self.getRubberBand().numberOfVertices() > 2:
             geom = self.getRubberBand().asGeometry()
+
             if self.controlPressed == False:
                 self.acquisitionFinished.emit(geom) ##### SIGNAL ######
             else:
@@ -347,16 +348,23 @@ class AcquisitionFree(gui.QgsMapTool):
 
         self.cancelEdition()
 
-    def doReshape(self, g):
+    def doReshape(self, geom):
         line = ''
-        if g.type() == QGis.Line:
-            line = g.asPolyline()
-        elif g.type() == QGis.Polygon:
-            line = g.asPolygon()[0]
+        if geom.type() == QGis.Line:
+            line = geom.asPolyline()
+        elif geom.type() == QGis.Polygon:
+            line = geom.asPolygon()[0]
             del line[-1]
 
         layer = self.iface.mapCanvas().currentLayer() # layer atual.
-        for feat in layer.getFeatures():
+        #for feat in layer.getFeatures():
+            #geom = feat.geometry() # geometria que receberá o reshape.
+        request = QgsFeatureRequest()
+        #request.
+        feat = next(layer.getFeatures(request))
+        #box = feat.geometry().boundingBox()
+        
+        for feat in layer.getFeatures(request):
             geom = feat.geometry() # geometria que receberá o reshape.
             if geom.intersects(QgsGeometry.fromPolyline(line)): # Se intersecta e transforma frompolyline em geometria.
                 geom.reshapeGeometry(line) # realiza o reshape entre a linha e a geometria.

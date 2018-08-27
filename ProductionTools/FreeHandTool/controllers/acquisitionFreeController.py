@@ -169,8 +169,8 @@ class AcquisitionFreeController(object):
             canvas = self.getIface().mapCanvas()
             layer = canvas.currentLayer() 
             tolerance = self.getTolerance(layer)
-            geom = self.reprojectGeometry(geom)
-            simplifyGeometry = self.simplifyGeometry(geom, tolerance)
+            geom = self.reprojectGeometry(geom) #
+            simplifyGeometry = self.simplifyGeometry(geom, tolerance) #
             fields = layer.pendingFields()
             feature = core.QgsFeature()
             feature.setGeometry(simplifyGeometry)
