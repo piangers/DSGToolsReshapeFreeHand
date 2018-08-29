@@ -28,6 +28,7 @@ class AcquisitionFree(gui.QgsMapTool):
  
     #Sinal usado para enviar a geometria adquirida ao finalizar aquisição
     acquisitionFinished = QtCore.pyqtSignal('QgsGeometry*')
+    reshapeLineCreated = QtCore.pyqtSignal('QgsGeometry*')
 
     def __init__(self, iface):
         #construtor
@@ -340,7 +341,7 @@ class AcquisitionFree(gui.QgsMapTool):
             return
         if self.getRubberBand().numberOfVertices() > 2:
             geom = self.getRubberBand().asGeometry()
-
+            #self.simplifyGeometry()
             if self.controlPressed == False:
                 self.acquisitionFinished.emit(geom) ##### SIGNAL ######
             else:
@@ -355,21 +356,8 @@ class AcquisitionFree(gui.QgsMapTool):
         elif geom.type() == QGis.Polygon:
             line = geom.asPolygon()[0]
             del line[-1]
-
-        layer = self.iface.mapCanvas().currentLayer() # layer atual.
-        #for feat in layer.getFeatures():
-            #geom = feat.geometry() # geometria que receberá o reshape.
-        request = QgsFeatureRequest()
-        #request.
-        feat = next(layer.getFeatures(request))
-        #box = feat.geometry().boundingBox()
         
-        for feat in layer.getFeatures(request):
-            geom = feat.geometry() # geometria que receberá o reshape.
-            if geom.intersects(QgsGeometry.fromPolyline(line)): # Se intersecta e transforma frompolyline em geometria.
-                geom.reshapeGeometry(line) # realiza o reshape entre a linha e a geometria.
-                layer.changeGeometry(feat.id(), geom) 
-                self.iface.mapCanvas().refresh() # Refresh para atualizar, mas não salvar as alterações.
+        self.reshapeLineCreated.emit(QgsGeometry.fromPolyline(line))
 
     def activate(self):
         #Método chamado ao ativar a ferramenta
